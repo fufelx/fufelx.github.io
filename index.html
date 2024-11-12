@@ -168,7 +168,7 @@
 <script>
     // Функция для загрузки каналов
     function fetchChannels() {
-        fetch('http://localhost:3030/api/channels')
+        fetch('http://77.221.137.105:3030/api/channels')
             .then(response => response.json())
             .then(data => {
                 console.log('Данные каналов:', data);  // Логирование данных от сервера
@@ -237,7 +237,7 @@
 
     // Функция для загрузки данных для графика выбранного канала
     function fetchChartData(channel) {
-        fetch(`http://localhost:3030/api/subscriptions?range=day&channel=${channel}`)
+        fetch(`http://77.221.137.105:3030/api/subscriptions?range=day&channel=${channel}`)
             .then(response => response.json())
             .then(data => {
                 // Обновляем данные графика с сервера
@@ -253,7 +253,7 @@
     function updateRange(range) {
         const channel = document.querySelector('.channel-item.active'); // Получаем активный канал
         if (channel) {
-            fetch(`http://localhost:3030/api/subscriptions?range=${range}&channel=${channel.textContent}`)
+            fetch(`http://77.221.137.105:3030/api/subscriptions?range=${range}&channel=${channel.textContent}`)
                 .then(response => response.json())
                 .then(data => {
                     subscriptionChart.data.labels = data.labels;
