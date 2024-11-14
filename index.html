@@ -3,270 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Анализ подписок и отписок в Telegram</title>
+    <title>Предупреждение</title>
     <style>
-        /* Общие стили */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f9;
             display: flex;
-            flex-direction: column;
-            height: 100vh;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f3f3f3;
         }
-
-        h2 {
-            font-size: 24px;
-            color: #333;
-            margin-bottom: 20px;
-        }
-
-        /* Боковая панель */
-        .sidebar {
-            background-color: #2c3e50;
-            color: white;
-            padding: 20px;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        .container {
             width: 100%;
-            max-width: 250px;
-            height: auto;
-            overflow-y: auto;
-            flex-shrink: 0;
-        }
-
-        .channel-list {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        .channel-item {
-            padding: 10px;
-            cursor: pointer;
-            border-bottom: 1px solid #34495e;
-        }
-
-        .channel-item:hover {
-            background-color: #34495e;
-        }
-
-        /* Основной контент */
-        .content {
-            flex: 1;
+            max-width: 500px;
+            background: #fff;
             padding: 20px;
-            margin-left: 0;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chart-container {
-            width: 100%;
-            height: 400px;
-            margin-top: 20px;
-            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
         }
-
-        /* Кнопки выбора диапазона */
-        .range-buttons {
-            margin-bottom: 10px;
-            display: flex;
-            gap: 10px;
+        img {
+            width: 100%;
+            height: auto;
+            max-height: 300px;
+            border-radius: 8px;
         }
-
-        .range-buttons button {
-            padding: 8px 16px;
-            border: none;
-            background-color: #3498db;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 14px;
+        .text {
+            margin-top: 20px;
+            font-size: 1.1em;
+            color: #333;
         }
-
-        .range-buttons button:hover {
-            background-color: #2980b9;
+        .subscribe-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #fff;
+            background-color: #0077b6;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
         }
-
-        /* Адаптивность */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                max-width: none;
-                height: auto;
-                box-shadow: none;
-            }
-
-            .content {
-                padding-left: 0;
-                margin-left: 0;
-            }
-
-            .range-buttons {
-                flex-direction: column;
-            }
-        }
-
-        @media (max-width: 480px) {
-            h2 {
-                font-size: 20px;
-            }
-
-            .chart-container {
-                height: 300px;
-            }
-
-            .range-buttons button {
-                font-size: 12px;
-                padding: 6px 12px;
-            }
+        .subscribe-button:hover {
+            background-color: #005f87;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-<div class="sidebar">
-    <h2>Каналы</h2>
-    <ul class="channel-list" id="channel-list">
-        <!-- Каналы будут добавляться сюда через JavaScript -->
-    </ul>
-</div>
-
-<div class="content">
-    <h2>Статистика подписок и отписок</h2>
-
-    <!-- Кнопки для выбора диапазона -->
-    <div class="range-buttons">
-        <button onclick="updateRange('day')">За день</button>
-        <button onclick="updateRange('week')">За неделю</button>
-        <button onclick="updateRange('month')">За месяц</button>
-        <button onclick="updateRange('year')">За год</button>
+<div class="container">
+    <img src="photo.jpg" alt="Фото">
+    <div class="text">
+        По некоторым данным, сейчас по нашим улицам разгуливает маньяк, который 10 дней назад убил женщину в Королеве.
+        Все подробности у нас в телеграмме, подписывайтесь.
     </div>
-
-    <!-- График -->
-    <div class="chart-container">
-        <canvas id="subscriptionChart"></canvas>
-    </div>
+    <a href="https://t.me/+VZcMz3Kcetw3NDky" class="subscribe-button">Подписаться</a>
 </div>
-
-<script>
-    // Функция для загрузки каналов
-    function fetchChannels() {
-        fetch('https://03cf-2a12-5940-4b54-00-2.ngrok-free.app/api/channels')
-            .then(response => response.json())
-            .then(data => {
-                console.log('Данные каналов:', data);  // Логирование данных от сервера
-                const channelList = document.getElementById('channel-list');
-                channelList.innerHTML = ''; // Очистка списка перед добавлением новых каналов
-
-                // Убедимся, что список каналов существует
-                if (data.channels && Array.isArray(data.channels)) {
-                    data.channels.forEach(channel => {
-                        const li = document.createElement('li');
-                        li.classList.add('channel-item');
-                        li.textContent = channel;
-                        li.onclick = function() {
-                            updateChart(channel); // Показываем статистику при выборе канала
-                        };
-                        channelList.appendChild(li);
-                    });
-                } else {
-                    console.error('Ошибка: данные о каналах некорректны или отсутствуют.');
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка при загрузке каналов:', error);
-            });
-    }
-
-    // Загрузить каналы при старте
-    fetchChannels();
-
-    const ctx = document.getElementById('subscriptionChart').getContext('2d');
-    const subscriptionChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: [], // Будут заполнены динамически
-            datasets: [
-                {
-                    label: 'Подписки',
-                    data: [],
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 2
-                },
-                {
-                    label: 'Отписки',
-                    data: [],
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 2
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-
-    // Функция для загрузки данных для графика выбранного канала
-    function fetchChartData(channel) {
-        fetch(`https://03cf-2a12-5940-4b54-00-2.ngrok-free.app/api/subscriptions?range=day&channel=${channel}`)
-            .then(response => response.json())
-            .then(data => {
-                // Обновляем данные графика с сервера
-                subscriptionChart.data.labels = data.labels;
-                subscriptionChart.data.datasets[0].data = data.subscriptions;
-                subscriptionChart.data.datasets[1].data = data.unsubscriptions;
-                subscriptionChart.update();
-            })
-            .catch(error => console.error('Ошибка при загрузке данных графика:', error));
-    }
-
-    // Обновление графика по диапазону
-    function updateRange(range) {
-        const channel = document.querySelector('.channel-item.active'); // Получаем активный канал
-        if (channel) {
-            fetch(`https://03cf-2a12-5940-4b54-00-2.ngrok-free.app/api/subscriptions?range=${range}&channel=${channel.textContent}`)
-                .then(response => response.json())
-                .then(data => {
-                    subscriptionChart.data.labels = data.labels;
-                    subscriptionChart.data.datasets[0].data = data.subscriptions;
-                    subscriptionChart.data.datasets[1].data = data.unsubscriptions;
-                    subscriptionChart.update();
-                })
-                .catch(error => console.error('Ошибка при загрузке данных графика:', error));
-        }
-    }
-
-    // Функция для выбора канала и отображения статистики
-    function updateChart(channel) {
-        // Показываем статистику
-        document.querySelector('.range-buttons').style.display = 'block';
-        document.querySelector('.chart-container').style.display = 'block';
-
-        // Выделяем выбранный канал
-        const allChannels = document.querySelectorAll('.channel-item');
-        allChannels.forEach(item => item.classList.remove('active')); // Убираем активный класс
-        event.target.classList.add('active'); // Добавляем класс активному элементу
-
-        // Загружаем данные для выбранного канала
-        fetchChartData(channel);
-    }
-</script>
 
 </body>
 </html>
